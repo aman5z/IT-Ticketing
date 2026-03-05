@@ -2,491 +2,578 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IT Ticket System</title>
-
 <style>
 
-/* ===== SAFE BLOGGER RESET ===== */
-body, .post, .post-body, .content, .main-inner {
-  margin:0 !important;
-  padding:0 !important;
-}
-
-/* ===== LIGHT THEME ===== */
+/* ===== THEME VARIABLES ===== */
 :root{
-  --bg:#f5f7ff;
-  --text:#111;
+  --bg:#f0f4ff;
+  --text:#1e1b4b;
   --card:#ffffff;
   --primary:#4f46e5;
   --primary-dark:#4338ca;
   --danger:#ef4444;
   --border:#e5e7eb;
   --table-head:#f3f4f6;
-  --row-hover:#f9fafb;
+  --row-hover:#f0f4ff;
+  --sub:#6b7280;
+  --input-bg:#ffffff;
+  --topbar-bg:rgba(240,244,255,0.85);
 }
 
-/* ===== DARK THEME ===== */
 body.dark{
-  --bg:#0f172a;
-  --text:#ffffff;
-  --card:#1e293b;
-  --primary:#3b82f6;
-  --primary-dark:#2563eb;
+  --bg:#000000;
+  --text:#e2e8f0;
+  --card:#0f172a;
+  --primary:#6366f1;
+  --primary-dark:#818cf8;
   --danger:#ef4444;
-  --border:#334155;
-  --table-head:#334155;
-  --row-hover:#1f2937;
+  --border:#1e293b;
+  --table-head:#1e293b;
+  --row-hover:#111827;
+  --sub:#94a3b8;
+  --input-bg:#0f172a;
+  --topbar-bg:rgba(0,0,0,0.85);
 }
 
-/* ===== GLOBAL ===== */
+*{ box-sizing:border-box; margin:0; padding:0; }
+
 body{
   background:var(--bg);
   color:var(--text);
   font-family:Arial, sans-serif;
-  transition:0.3s;
+  transition:background .3s, color .3s;
+  min-height:100vh;
+}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:var(--topbar-bg);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:8px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.topbar-center{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+}
+#clock{
+  font-size:14px;
+  color:var(--sub);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+#weather{
+  font-size:13px;
+  color:var(--sub);
+  margin-top:2px;
 }
 
 /* ===== THEME BUTTON ===== */
-.theme-toggle{
-  position:fixed;
-  top:20px;
-  right:20px;
+#themeBtn{
+  width:40px; height:40px;
+  border-radius:50%;
   background:var(--card);
   border:1px solid var(--border);
-  padding:8px 14px;
-  border-radius:6px;
+  font-size:18px;
   cursor:pointer;
-  font-size:14px;
-  z-index:999;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .3s;
+  flex-shrink:0;
+  color:var(--text);
 }
+#themeBtn.spin{ animation:spinOnce .5s ease; }
+@keyframes spinOnce{ from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+/* ===== SPINNER OVERLAY ===== */
+.spinner-overlay{
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:9999;
+  align-items:center; justify-content:center;
+  flex-direction:column; gap:14px;
+}
+.spinner-overlay.show{ display:flex; }
+.spinner{
+  width:52px; height:52px;
+  border:5px solid rgba(255,255,255,0.2);
+  border-top-color:#6366f1;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{ to{transform:rotate(360deg)} }
+.spinner-text{ color:#fff; font-size:15px; }
 
 /* ===== CONTAINER ===== */
 .container{
   max-width:1100px;
-  margin:40px auto;
-  padding:20px;
+  margin:0 auto;
+  padding:24px 20px;
 }
 
 /* ===== CARD ===== */
 .card{
   background:var(--card);
-  padding:25px;
-  border-radius:10px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.08);
-  margin-bottom:30px;
+  padding:24px;
+  border-radius:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.07);
+  margin-bottom:24px;
   border:1px solid var(--border);
+  transition:background .3s, border .3s;
 }
 
 /* ===== LOGIN BOX ===== */
 #loginBox{
-  max-width:350px;
-  margin:60px auto;
+  max-width:380px;
+  margin:40px auto;
 }
 
 /* ===== HEADINGS ===== */
 h2,h3,h4{
-  text-align:center;
-  margin-bottom:20px;
+  margin-bottom:16px;
 }
+h3{ text-align:center; }
 
 /* ===== INPUTS ===== */
 input, textarea, select{
   width:100%;
-  padding:8px;
-  margin:8px 0;
-  border-radius:5px;
+  padding:10px 12px;
+  margin:6px 0;
+  border-radius:8px;
   border:1px solid var(--border);
-  box-sizing:border-box;
-  background:var(--card);
+  background:var(--input-bg);
   color:var(--text);
+  font-size:14px;
+  transition:border .2s;
 }
+input:focus, textarea:focus, select:focus{
+  outline:none;
+  border-color:var(--primary);
+}
+
+/* ===== PASSWORD WRAP ===== */
+.pw-wrap{ position:relative; margin:6px 0; }
+.pw-wrap input{ margin:0; padding-right:42px; }
+.eye-btn{
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer;
+  color:var(--sub); font-size:18px; padding:0; margin:0;
+  width:auto; height:auto;
+}
+.eye-btn:hover{ background:none; color:var(--primary); }
+
+/* ===== REMEMBER ME ===== */
+.remember-row{
+  display:flex; align-items:center; gap:8px;
+  margin:8px 0; font-size:14px; color:var(--sub);
+}
+.remember-row input{ width:auto; margin:0; }
 
 /* ===== BUTTONS ===== */
 button{
-  padding:10px;
+  padding:10px 16px;
   border:none;
-  border-radius:5px;
+  border-radius:8px;
   cursor:pointer;
   background:var(--primary);
   color:white;
-  transition:0.3s;
+  font-size:14px;
+  transition:background .2s, transform .1s;
+  margin-top:6px;
+  width:100%;
 }
-
-button:hover{
-  background:var(--primary-dark);
-}
+button:hover{ background:var(--primary-dark); }
+button:active{ transform:scale(.97); }
 
 .logout-btn{
   background:var(--danger);
-  padding:4px 10px !important;
-  font-size:15px !important;
-  line-height:1 !important;
-  height:auto !important;
   width:auto !important;
+  padding:6px 14px !important;
+  font-size:13px !important;
   margin:0 !important;
 }
-
+.logout-btn:hover{ background:#dc2626; }
 
 /* ===== HIDDEN ===== */
-.hidden{display:none}
+.hidden{ display:none; }
 
 /* ===== STATS ===== */
 .stats{
-  display:flex;
-  gap:20px;
-  flex-wrap:wrap;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+  gap:16px;
+  margin-top:8px;
 }
-
 .stat-box{
-  flex:1;
-  min-width:180px;
-  background:var(--card);
-  padding:20px;
-  border-radius:8px;
+  background:var(--bg);
+  padding:18px;
+  border-radius:10px;
   text-align:center;
   border:1px solid var(--border);
 }
-
 .stat-box h3{
-  margin:0;
-  font-size:28px;
+  font-size:32px;
   color:var(--primary);
+  margin-bottom:4px;
+  text-align:center;
 }
+.stat-box p{ font-size:13px; color:var(--sub); }
 
 /* ===== TABLE ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
+table{ width:100%; border-collapse:collapse; }
+th,td{ padding:10px 12px; border-bottom:1px solid var(--border); text-align:left; font-size:14px; }
+th{ background:var(--table-head); font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--sub); }
+tr:hover td{ background:var(--row-hover); }
+
+.status-open{ color:#f59e0b; font-weight:bold; }
+.status-closed{ color:#22c55e; font-weight:bold; }
+.overdue{ color:#ef4444; font-weight:bold; }
+
+pre{ color:#ef4444; font-size:13px; margin-top:8px; }
+
+/* ===== DASHBOARD HEADER ===== */
+.dash-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+.dash-header h3{ margin:0; text-align:left; }
+
+/* ===== MOBILE ===== */
+@media(max-width:600px){
+  .topbar-center{ position:static; transform:none; flex:1; text-align:center; }
+  .topbar{ flex-wrap:wrap; gap:6px; }
+  #clock{ font-size:11px; }
+  table,thead,tbody,th,td,tr{ display:block; }
+  thead{ display:none; }
+  td{ border:none; padding:4px 8px; }
+  td:before{ content:attr(data-label)": "; font-weight:bold; color:var(--sub); font-size:11px; display:block; }
+  tr{ border:1px solid var(--border); border-radius:8px; margin-bottom:10px; padding:8px; }
+  .stats{ grid-template-columns:1fr 1fr; }
+  button{ font-size:13px; }
 }
 
-th,td{
-  padding:10px;
-  border-bottom:1px solid var(--border);
-}
-
-th{
-  background:var(--table-head);
-  text-align:left;
-}
-
-tr:hover{
-  background:var(--row-hover);
-}
-
-.status-open{
-  color:#facc15;
-  font-weight:bold;
-}
-
-.status-closed{
-  color:#22c55e;
-  font-weight:bold;
-}
-
-pre{
-  color:#ef4444;
-}
-
-.overdue{
-  color:#ef4444;
-  font-weight:bold;
-}
-
-</style></head>
-
+</style>
+</head>
 <body>
 
-<button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙</button>
+<!-- SPINNER -->
+<div class="spinner-overlay" id="spinnerOverlay">
+  <div class="spinner"></div>
+  <div class="spinner-text">Logging in...</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div style="width:40px;"></div>
+  <div class="topbar-center">
+    <div id="clock"></div>
+    <div id="weather"></div>
+  </div>
+  <button id="themeBtn" onclick="toggleTheme()" style="width:40px;">🌙</button>
+</div>
 
 <div class="container">
 
-<!-- LOGIN -->
-<div id="loginBox" class="card">
-<h3>IT Ticket System</h3>
+  <!-- LOGIN -->
+  <div id="loginBox" class="card">
+    <h3>🎫 IT Ticket System</h3>
 
-<form onsubmit="handleLogin(event)">
-<input id="email" placeholder="Email" required>
-<input id="password" type="password" placeholder="Password" required>
-<button type="submit">Login</button>
-</form>
+    <input id="email" placeholder="Email" autocomplete="username">
 
-<pre id="loginResult"></pre>
-</div>
+    <div class="pw-wrap">
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="eye-btn" type="button" id="eyeBtn" onclick="togglePw()">👁</button>
+    </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="hidden">
+    <div class="remember-row">
+      <input type="checkbox" id="rememberMe" checked>
+      <label for="rememberMe">Remember me</label>
+    </div>
 
-<div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center;">
-<h3>Dashboard</h3>
-<button class="logout-btn" onclick="logout()">Logout</button>
-</div>
+    <button onclick="doLogin()" id="loginBtn">Login</button>
+    <pre id="loginResult"></pre>
+  </div>
 
-<div class="stats">
-<div class="stat-box">
-<h3 id="totalCount">0</h3>
-<p>Total</p>
-</div>
-<div class="stat-box">
-<h3 id="openCount">0</h3>
-<p>Open</p>
-</div>
-<div class="stat-box">
-<h3 id="closedCount">0</h3>
-<p>Closed</p>
-</div>
-<div class="stat-box">
-<h3 id="overdueCount">0</h3>
-<p>Overdue</p>
-</div>
-</div>
-</div>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden">
 
-<div class="card">
-<h4>Create Ticket</h4>
-<input id="title" placeholder="Title">
-<textarea id="description" placeholder="Description"></textarea>
-<select id="priority">
-<option>Low</option>
-<option>Medium</option>
-<option>High</option>
-</select>
-<input type="file" id="attachment">
-<button onclick="createTicket()">Create</button>
-</div>
+    <div class="card">
+      <div class="dash-header">
+        <h3>Dashboard</h3>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+      <div class="stats">
+        <div class="stat-box"><h3 id="totalCount">0</h3><p>Total</p></div>
+        <div class="stat-box"><h3 id="openCount">0</h3><p>Open</p></div>
+        <div class="stat-box"><h3 id="closedCount">0</h3><p>Closed</p></div>
+        <div class="stat-box"><h3 id="overdueCount">0</h3><p>Overdue</p></div>
+      </div>
+    </div>
 
-<div class="card">
-<h4>Search</h4>
-<input id="searchBox" placeholder="Search tickets..." oninput="loadTickets()">
-</div>
+    <div class="card">
+      <h4>Create Ticket</h4>
+      <input id="title" placeholder="Title">
+      <textarea id="description" placeholder="Description"></textarea>
+      <select id="priority">
+        <option>Low</option>
+        <option>Medium</option>
+        <option>High</option>
+      </select>
+      <input type="file" id="attachment">
+      <button onclick="createTicket()">Create Ticket</button>
+    </div>
 
-<div class="card">
-<h4>All Tickets</h4>
-<table id="ticketTable"></table>
-</div>
+    <div class="card">
+      <h4>Search</h4>
+      <input id="searchBox" placeholder="Search tickets..." oninput="loadTickets()">
+    </div>
 
-</div>
+    <div class="card">
+      <h4>All Tickets</h4>
+      <table id="ticketTable"></table>
+    </div>
+
+  </div>
 </div>
 
 <script>
+const API = "https://script.google.com/macros/s/AKfycbxhmHmuh0Z-YT9nWHwMK4vde0xbnpFUUQs22pOQ52TDZoqeSo0m4Abz7-3BDCghg06E/exec";
 
-const API="https://script.google.com/macros/s/AKfycbxhmHmuh0Z-YT9nWHwMK4vde0xbnpFUUQs22pOQ52TDZoqeSo0m4Abz7-3BDCghg06E/exec";
-
-let token=localStorage.getItem("token");
-let userRole="";
-let userEmail="";
+let token = localStorage.getItem("token") || sessionStorage.getItem("token");
+let userRole = "";
+let userEmail = "";
 
 if(token) showDashboard();
 
+/* ===== CLOCK ===== */
+function updateClock(){
+  const now = new Date();
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  const time = String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")+ampm;
+  document.getElementById("clock").textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}  ${time}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ===== WEATHER ===== */
+function weatherEmoji(code, temp){
+  if(code <= 1) return temp >= 30 ? "☀️" : "🌤️";
+  if(code <= 3) return "⛅";
+  if(code <= 48) return "🌫️";
+  if(code <= 67) return "🌧️";
+  if(code <= 77) return "❄️";
+  if(code <= 82) return "🌦️";
+  return "⛈️";
+}
+function loadWeather(){
+  if(!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat, longitude:lon} = pos.coords;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(2)}&longitude=${lon.toFixed(2)}&current_weather=true`)
+      .then(r=>r.json())
+      .then(d=>{
+        const temp = Math.round(d.current_weather.temperature);
+        const code = d.current_weather.weathercode;
+        document.getElementById("weather").textContent = `${weatherEmoji(code,temp)} ${temp}°C`;
+      }).catch(()=>{});
+  }, ()=>{});
+}
+loadWeather();
+
 /* ===== THEME ===== */
+(()=>{
+  const saved = localStorage.getItem("ticketTheme") || "light";
+  if(saved === "dark"){
+    document.body.classList.add("dark");
+    document.getElementById("themeBtn").textContent = "☀️";
+  }
+})();
+
 function toggleTheme(){
-document.body.classList.toggle("dark");
-const dark=document.body.classList.contains("dark");
-themeBtn.textContent=dark?"☀️":"🌙";
-localStorage.setItem("theme",dark?"dark":"light");
+  const btn = document.getElementById("themeBtn");
+  btn.classList.remove("spin"); void btn.offsetWidth; btn.classList.add("spin");
+  const dark = document.body.classList.toggle("dark");
+  btn.textContent = dark ? "☀️" : "🌙";
+  localStorage.setItem("ticketTheme", dark ? "dark" : "light");
 }
 
-window.onload=function(){
-if(localStorage.getItem("theme")==="dark"){
-document.body.classList.add("dark");
-themeBtn.textContent="☀️";
+/* ===== PASSWORD TOGGLE ===== */
+function togglePw(){
+  const pw = document.getElementById("password");
+  pw.type = pw.type === "password" ? "text" : "password";
+  document.getElementById("eyeBtn").textContent = pw.type === "password" ? "👁" : "🙈";
 }
-};
 
 /* ===== LOGIN ===== */
-function handleLogin(e){
-e.preventDefault();
-login();
-}
-
-function login(){
-fetch(API,{
-method:"POST",
-body:new URLSearchParams({
-action:"login",
-email:email.value,
-password:password.value
-})
-})
-.then(r=>r.json())
-.then(data=>{
-token=data.token;
-userRole=data.role;
-userEmail=email.value;
-localStorage.setItem("token",token);
-showDashboard();
-})
-.catch(()=>loginResult.textContent="Login failed");
+function doLogin(){
+  document.getElementById("spinnerOverlay").classList.add("show");
+  fetch(API, {
+    method:"POST",
+    body: new URLSearchParams({
+      action:"login",
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
+    })
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    document.getElementById("spinnerOverlay").classList.remove("show");
+    if(!data.token){ document.getElementById("loginResult").textContent = "Login failed"; return; }
+    token = data.token;
+    userRole = data.role;
+    userEmail = document.getElementById("email").value;
+    const remember = document.getElementById("rememberMe").checked;
+    if(remember){ localStorage.setItem("token", token); }
+    else{ sessionStorage.setItem("token", token); localStorage.removeItem("token"); }
+    showDashboard();
+  })
+  .catch(()=>{
+    document.getElementById("spinnerOverlay").classList.remove("show");
+    document.getElementById("loginResult").textContent = "Login failed";
+  });
 }
 
 function showDashboard(){
-loginBox.classList.add("hidden");
-dashboard.classList.remove("hidden");
-loadTickets();
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  loadTickets();
 }
 
 function logout(){
-localStorage.clear();
-location.reload();
+  localStorage.clear(); sessionStorage.clear();
+  location.reload();
 }
 
 /* ===== CREATE TICKET ===== */
 async function createTicket(){
-
-let fileBase64="";
-const file=document.getElementById("attachment").files[0];
-
-if(file){
-fileBase64=await toBase64(file);
-}
-
-fetch(API,{
-method:"POST",
-body:new URLSearchParams({
-action:"createTicket",
-token:token,
-title:title.value,
-description:description.value,
-priority:priority.value,
-attachment:fileBase64
-})
-})
-.then(()=>{
-title.value="";
-description.value="";
-attachment.value="";
-loadTickets();
-});
+  let fileBase64 = "";
+  const file = document.getElementById("attachment").files[0];
+  if(file){ fileBase64 = await toBase64(file); }
+  fetch(API, {
+    method:"POST",
+    body: new URLSearchParams({
+      action:"createTicket", token,
+      title: document.getElementById("title").value,
+      description: document.getElementById("description").value,
+      priority: document.getElementById("priority").value,
+      attachment: fileBase64
+    })
+  }).then(()=>{
+    document.getElementById("title").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("attachment").value = "";
+    loadTickets();
+  });
 }
 
 function toBase64(file){
-return new Promise((resolve)=>{
-const reader=new FileReader();
-reader.onload=()=>resolve(reader.result.split(",")[1]);
-reader.readAsDataURL(file);
-});
+  return new Promise(resolve=>{
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(",")[1]);
+    r.readAsDataURL(file);
+  });
 }
 
 /* ===== LOAD TICKETS ===== */
 function loadTickets(){
+  fetch(API, {
+    method:"POST",
+    body: new URLSearchParams({ action:"getTickets", token })
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    let html = `<tr>
+      <th>ID</th><th>Title</th><th>Status</th>
+      <th>Assigned</th><th>SLA</th><th>File</th><th>Action</th>
+    </tr>`;
+    let open=0, closed=0, overdue=0, total=0;
+    const search = document.getElementById("searchBox").value.toLowerCase();
 
-fetch(API,{
-method:"POST",
-body:new URLSearchParams({
-action:"getTickets",
-token:token
-})
-})
-.then(r=>r.json())
-.then(data=>{
+    for(let i=1; i<data.length; i++){
+      const status   = data[i][7];
+      const assigned = data[i][8];
+      const titleTxt = (data[i][4]||"").toLowerCase();
 
-let html="<tr><th>ID</th><th>Title</th><th>Status</th><th>Assigned</th><th>SLA</th><th>File</th><th>Action</th></tr>";
+      if(search && !titleTxt.includes(search)) continue;
+      if(userRole==="User" && data[i][3]!==userEmail) continue;
+      if(userRole==="Technician" && assigned!==userEmail && assigned!=="Unassigned") continue;
 
-let open=0,closed=0,overdue=0,totalVisible=0;
+      const due = new Date(data[i][11]);
+      const remaining = Math.floor((due - new Date())/1000);
 
-let search=document.getElementById("searchBox").value.toLowerCase();
+      total++;
+      if(status==="Open") open++;
+      if(status==="Closed") closed++;
+      if(status==="Open" && remaining<0) overdue++;
 
-for(let i=1;i<data.length;i++){
+      const fileCell = data[i][12]
+        ? `<a href="data:application/octet-stream;base64,${data[i][12]}" download>⬇ Download</a>`
+        : "—";
 
-let status=data[i][7];
-let assigned=data[i][8];
-let titleText=(data[i][4]||"").toLowerCase();
+      const actionCell = userRole!=="User" && status==="Open" ? `
+        <select onchange="assignTicket('${data[i][0]}',this.value)" style="width:auto;margin:0 4px 0 0;">
+          <option>Unassigned</option>
+          <option ${assigned==='tech1@mail.com'?'selected':''}>tech1@mail.com</option>
+          <option ${assigned==='tech2@mail.com'?'selected':''}>tech2@mail.com</option>
+        </select>
+        <button onclick="closeTicket('${data[i][0]}')" style="width:auto;padding:5px 10px;font-size:12px;margin:0;">Close</button>
+      ` : "";
 
-/* ===== SEARCH FILTER ===== */
-if(search && !titleText.includes(search)) continue;
+      html += `<tr>
+        <td data-label="ID">${data[i][0]}</td>
+        <td data-label="Title">${data[i][4]}</td>
+        <td data-label="Status" class="${status==='Open'?'status-open':'status-closed'}">${status}</td>
+        <td data-label="Assigned">${assigned||'Unassigned'}</td>
+        <td data-label="SLA" class="${remaining<0?'overdue':''}">${formatTime(remaining)}</td>
+        <td data-label="File">${fileCell}</td>
+        <td data-label="Action">${actionCell}</td>
+      </tr>`;
+    }
 
-/* ===== ROLE FILTER ===== */
-if(userRole==="User" && data[i][3]!==userEmail) continue;
-if(userRole==="Technician" && assigned!==userEmail && assigned!=="Unassigned") continue;
-
-/* ===== SLA ===== */
-let due=new Date(data[i][11]);
-let now=new Date();
-let remaining=Math.floor((due-now)/1000);
-
-/* ===== COUNTERS ===== */
-totalVisible++;
-
-if(status==="Open") open++;
-if(status==="Closed") closed++;
-if(status==="Open" && remaining<0) overdue++;
-
-/* ===== ATTACHMENT DISPLAY ===== */
-let fileCell="—";
-if(data[i][12]){
-fileCell=`<a href="data:application/octet-stream;base64,${data[i][12]}" download>Download</a>`;
+    document.getElementById("ticketTable").innerHTML = html;
+    document.getElementById("totalCount").textContent  = total;
+    document.getElementById("openCount").textContent   = open;
+    document.getElementById("closedCount").textContent = closed;
+    document.getElementById("overdueCount").textContent= overdue;
+  });
 }
 
-html+=`<tr>
-<td>${data[i][0]}</td>
-<td>${data[i][4]}</td>
-<td class="${status==='Open'?'status-open':'status-closed'}">${status}</td>
-<td>${assigned||'Unassigned'}</td>
-<td class="${remaining<0?'overdue':''}">${formatTime(remaining)}</td>
-<td>${fileCell}</td>
-<td>
-${userRole!=="User" && status==="Open" ? `
-<select onchange="assignTicket('${data[i][0]}',this.value)">
-<option>Unassigned</option>
-<option ${assigned==='tech1@mail.com'?'selected':''}>tech1@mail.com</option>
-<option ${assigned==='tech2@mail.com'?'selected':''}>tech2@mail.com</option>
-</select>
-<button onclick="closeTicket('${data[i][0]}')">Close</button>`:''}
-</td>
-</tr>`;
+/* ===== ASSIGN / CLOSE ===== */
+function assignTicket(id, value){
+  fetch(API,{ method:"POST", body:new URLSearchParams({ action:"updateTicket", token, ticketId:id, status:"Open", assignedTo:value }) })
+  .then(()=>loadTickets());
 }
-
-ticketTable.innerHTML=html;
-totalCount.textContent=totalVisible;
-openCount.textContent=open;
-closedCount.textContent=closed;
-overdueCount.textContent=overdue;
-
-});
-}
-
-/* ===== ASSIGN ===== */
-function assignTicket(id,value){
-fetch(API,{
-method:"POST",
-body:new URLSearchParams({
-action:"updateTicket",
-token:token,
-ticketId:id,
-status:"Open",
-assignedTo:value
-})
-})
-.then(()=>loadTickets());
-}
-
-/* ===== CLOSE ===== */
 function closeTicket(id){
-fetch(API,{
-method:"POST",
-body:new URLSearchParams({
-action:"updateTicket",
-token:token,
-ticketId:id,
-status:"Closed",
-assignedTo:userEmail
-})
-})
-.then(()=>loadTickets());
+  fetch(API,{ method:"POST", body:new URLSearchParams({ action:"updateTicket", token, ticketId:id, status:"Closed", assignedTo:userEmail }) })
+  .then(()=>loadTickets());
 }
 
 /* ===== FORMAT SLA ===== */
 function formatTime(sec){
-if(sec<=0) return "Overdue";
-let h=Math.floor(sec/3600);
-let m=Math.floor((sec%3600)/60);
-return h+"h "+m+"m";
+  if(sec<=0) return "Overdue";
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  return h+"h "+m+"m";
 }
 
 /* ===== AUTO REFRESH ===== */
-setInterval(()=>{ if(token) loadTickets(); },60000);
-
+setInterval(()=>{ if(token) loadTickets(); }, 60000);
 </script>
-
 </body>
 </html>
