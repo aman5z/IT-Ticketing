@@ -75,7 +75,6 @@ body{
 #weather{
   font-size:13px;
   color:var(--sub);
-  margin-top:2px;
 }
 
 /* ===== THEME BUTTON ===== */
@@ -278,8 +277,10 @@ pre{ color:#ef4444; font-size:13px; margin-top:8px; }
 <div class="topbar">
   <div style="width:40px;"></div>
   <div class="topbar-center">
-    <div id="clock"></div>
-    <div id="weather"></div>
+    <div id="clockrow" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+      <div id="clock"></div>
+      <div id="weather"></div>
+    </div>
   </div>
   <button id="themeBtn" onclick="toggleTheme()" style="width:40px;">🌙</button>
 </div>
@@ -324,7 +325,8 @@ pre{ color:#ef4444; font-size:13px; margin-top:8px; }
 
     <div class="card">
       <h4>Create Ticket</h4>
-      <input id="title" placeholder="Title">
+      <input id="requesterName" placeholder="Your Name">
+      <input id="title" placeholder="Issue Title">
       <textarea id="description" placeholder="Description"></textarea>
       <select id="priority">
         <option>Low</option>
@@ -349,7 +351,7 @@ pre{ color:#ef4444; font-size:13px; margin-top:8px; }
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxhmHmuh0Z-YT9nWHwMK4vde0xbnpFUUQs22pOQ52TDZoqeSo0m4Abz7-3BDCghg06E/exec";
+const API = "https://script.google.com/macros/s/AKfycbyZHdiDZ1WSuOCZ3D2Z5oKtbVvOVnQ13HjbghmLUO-BTfoLw20_scr6bQfPcpR22dok/exec";
 
 let token = localStorage.getItem("token") || sessionStorage.getItem("token");
 let userRole = "";
@@ -469,12 +471,16 @@ async function createTicket(){
     method:"POST",
     body: new URLSearchParams({
       action:"createTicket", token,
+      requesterName: document.getElementById("requesterName").value,
       title: document.getElementById("title").value,
       description: document.getElementById("description").value,
       priority: document.getElementById("priority").value,
-      attachment: fileBase64
+      attachment: fileBase64,
+      attachmentName: file ? file.name : ""
     })
   }).then(()=>{
+    document.getElementById("requesterName").value = "";
+    document.getElementById("requesterName").value = "";
     document.getElementById("title").value = "";
     document.getElementById("description").value = "";
     document.getElementById("attachment").value = "";
