@@ -3,9 +3,8 @@ IT Helpdesk Ticket Management System
 Short Description
 A web-based IT helpdesk ticketing system that allows users to create, track, assign, and resolve support tickets with role-based access control and SLA monitoring.
 
-<img width="1504" height="632" alt="Screenshot 2026-03-06 131545" src="https://github.com/user-attachments/assets/e08b6edd-a120-4bbe-9614-aa84ec678c5d" />
-
 <img width="906" height="872" alt="Screenshot 2026-03-06 131432" src="https://github.com/user-attachments/assets/804904fa-a0b7-450c-954a-80edffe453d6" />
+<img width="1504" height="632" alt="Screenshot 2026-03-06 131545" src="https://github.com/user-attachments/assets/e08b6edd-a120-4bbe-9614-aa84ec678c5d" />
 
 
 Detailed Description
